@@ -1,0 +1,25 @@
+# values.yaml
+replicaCount: 1
+
+image:
+  repository: aysenur2763/ai-code-assistant
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ollama:
+  pvc:
+    name: ollama-storage
+    size: 10Gi
+  enabled: true
+  image:
+    repository: ollama/ollama
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 11434
+  # Ollama servisi başlatıldığında AI kodu üretici servise yönlendirilmesi için
+  ai_code_assistant_url: "http://ai-code-assistant:5000"

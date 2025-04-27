@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+      - name: ollama
+        image: "{{ .Values.ollama.image.repository }}:{{ .Values.ollama.image.tag }}"
+        imagePullPolicy: {{ .Values.ollama.image.pullPolicy }}
+        ports:
+          - containerPort: {{ .Values.ollama.service.port }}
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "/bin/sh"
+                - "-c"
+                - |
+                  echo "Model indiriliyor..."
+                  ollama pull codellama || echo "Model indirme başarısız"
+        volumeMounts:
+          - name: ollama-storage
+            mountPath: /root/.ollama
+        command: ["ollama", "serve"]
+        args: ["--port", "{{ .Values.ollama.service.port }}"]
+
+      volumes:
+        - name: ollama-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.ollama.pvc.name }}
